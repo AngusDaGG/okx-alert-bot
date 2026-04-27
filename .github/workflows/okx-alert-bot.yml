@@ -1,6 +1,10 @@
 name: OKX Alert Bot
 
 on:
+  push:
+    branches:
+      - main
+      
   # 定時觸發：每 5 分鐘執行一次
   schedule:
     - cron: "3,8,13,18,23,28,33,38,43,48,53,58 * * * *"
