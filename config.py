@@ -18,3 +18,6 @@ if not DISCORD_WEBHOOK_URL:
 # 警報門檻與時間週期
 ALERT_THRESHOLD_PCT = 2.0
 TIMEFRAME = "5m"
+
+# 警報冷卻時間 (分鐘)
+ALERT_COOLDOWN_MINUTES = int(os.getenv("ALERT_COOLDOWN_MINUTES", "60"))
