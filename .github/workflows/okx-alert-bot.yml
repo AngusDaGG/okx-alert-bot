@@ -1,47 +1,43 @@
 name: OKX Alert Bot
 
 on:
-  push:
-    branches:
-      - main
-      
-  # 定時觸發：每 5 分鐘執行一次
-  schedule:
-    - cron: "3,8,13,18,23,28,33,38,43,48,53,58 * * * *"
-  # 手動觸發按鈕
   workflow_dispatch:
-
-# 避免重複執行造成洗版，若上一輪還沒跑完，取消舊的直接跑新的
-concurrency:
-  group: okx-alert-bot
-  cancel-in-progress: true
-
-# 最小權限原則
-permissions:
-  contents: read
+    inputs:
+      source:
+        description: "Trigger source"
+        required: false
+        default: "manual"
+      triggered_at:
+        description: "Triggered time"
+        required: false
+        default: ""
 
 jobs:
-  scan-and-alert:
+  run-bot:
     runs-on: ubuntu-latest
-    # 單次執行上限 3 分鐘
-    timeout-minutes: 3
-    
+    timeout-minutes: 4
+
+    concurrency:
+      group: okx-alert-bot
+      cancel-in-progress: true
+
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
-        
-      - name: Set up Python 3.12
+
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-          
+          python-version: "3.11"
+
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          
-      - name: Run scanner
-        env:
-          # 從 GitHub Secrets 注入 Webhook 網址，絕對不會印在 log 裡
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: pip install -r requirements.txt
+
+      - name: Run bot once
         run: python main.py
+        env:
+          OKX_API_KEY: ${{ secrets.OKX_API_KEY }}
+          OKX_SECRET_KEY: ${{ secrets.OKX_SECRET_KEY }}
+          OKX_PASSPHRASE: ${{ secrets.OKX_PASSPHRASE }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          ALERT_COOLDOWN_MINUTES: 60
